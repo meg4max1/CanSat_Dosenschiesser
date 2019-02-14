@@ -1,3 +1,4 @@
+
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -13,28 +14,56 @@
 
 Adafruit_BME280 bme;
 
+unsigned long currentMillis = 0;
+unsigned long previousMillis = 0;
+const long interval = 500;
+
+String sensorVals;
+
 void setup() {
  pinMode(LED_BUILTIN,OUTPUT);
  digitalWrite(LED_BUILTIN,LOW);
  LoRa.setPins(SX1278_CS, SX1278_RST, SX1278_IRQ);
- if (!LoRa.begin(866E6)) {
-  digitalWrite(LED_BUILTIN,HIGH);
+ while (!LoRa.begin(868E6)) {
+  blinkled(200);
  }
  
- if(!bme.begin(BME_ADDR)){
-  digitalWrite(LED_BUILTIN,HIGH);
+ while(!bme.begin(BME_ADDR)){
+  blinkled(500);
+ }
+ while(!SD.begin()){
+  blinkled(1000);
  }
 
  
 }
 
 void loop() {
-  LoRa.beginPacket();
-  LoRa.print(bme.readTemperature());
-  LoRa.print(",");
-  LoRa.print(bme.readHumidity());
-  LoRa.print(",");
-  LoRa.print(bme.readPressure());
-  LoRa.endPacket();
+  currentMillis = millis();
+  if (millis() - previousMillis >= interval) {
+    sensorVals = readSensors();
+    LoRa.beginPacket();
+    LoRa.print(sensorVals);
+    LoRa.endPacket();
+    previousMillis = currentMillis;
+  }
+}
 
+String readSensors(){
+  int temperature = bme.readTemperature()*100;
+  int humidity = bme.readHumidity()*100;
+  int pressure = bme.readPressure()*100;
+  
+  String assembleString = "{";
+  assembleString = assembleString + temperature + "," + humidity + "," + pressure ;
+  assembleString +=  "}";
+  return assembleString;
+}
+
+void blinkled(int frequency){
+  pinMode(LED_BUILTIN,OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(frequency);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(frequency);
 }
