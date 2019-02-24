@@ -8,7 +8,7 @@
 #define enable    8
 
 String bufString;
-int serialVals[4];
+int serialVals[4] = {0,0,0,0};
 void setup() {
   pinMode(stephor,OUTPUT);
   pinMode(stepver1,OUTPUT);
@@ -28,19 +28,22 @@ void setup() {
 
 void loop() {
   serialRead();
-  for(int i=1;i<=4;i++){
+  for(int i=0;i<=3;i++){
   Serial.print(serialVals[i]);
-  Serial.print(",,,");
-  }  
-  delay(500);
+  Serial.print("/");
+  } 
+  Serial.println(); 
+  delay(2000);
 }
 
 void serialRead(){
  if(Serial.available()){
-  for(int i=1;i<=4;i++){
-  bufString = Serial.readStringUntil(","); 
-  serialVals[i]=bufString.toInt();
+  for(int i=0;i<=3;i++){
+    bufString = Serial.readStringUntil(','); 
+    serialVals[i]=bufString.toInt();
   }
-  Serial.flush(); 
-  }
+  while (Serial.available() > 0) {
+    Serial.read();
+  } 
+ }
 }
