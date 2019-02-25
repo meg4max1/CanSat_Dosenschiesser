@@ -7,8 +7,13 @@
 #define dirver2   7
 #define enable    8
 
+#define MOVE_SPEED_FAST 1 
+
 String bufString;
 int serialVals[4] = {0,0,0,0};
+bool newData = 0;
+
+
 void setup() {
   pinMode(stephor,OUTPUT);
   pinMode(stepver1,OUTPUT);
@@ -28,12 +33,13 @@ void setup() {
 
 void loop() {
   serialRead();
-  for(int i=0;i<=3;i++){
-  Serial.print(serialVals[i]);
-  Serial.print("/");
-  } 
-  Serial.println(); 
-  delay(2000);
+  if(newData){
+    movefast(serialVals[0],stephor,dirhor);
+    movefast(serialVals[1],stepver1,dirver1);
+    newData=0;
+  }
+  speedctrl(serialVals[2],stephor,dirhor);
+  speedctrl(serialVals[3],stepver1,dirver1);
 }
 
 void serialRead(){
@@ -45,5 +51,46 @@ void serialRead(){
   while (Serial.available() > 0) {
     Serial.read();
   } 
+  newData=1;
  }
 }
+
+void movefast(int steps, int steppin, int dirpin){
+  if(steps=0){
+    return 0;
+  }
+  else if(steps<0){
+    steps=steps*(-1);
+    digitalWrite(dirpin,LOW);
+  }
+  else{
+   digitalWrite(dirpin,HIGH); 
+  }
+  
+  for(int i=1; i<=steps; i++){ 
+    digitalWrite(steppin, HIGH); 
+    digitalWrite(steppin, LOW); 
+    delay(MOVE_SPEED_FAST);  
+  }
+  return 0;
+}
+void speedctrl(int movespeed, int steppin, int dirpin){
+  if (movespeed=0){
+    return 0;
+  }
+  else if(movespeed<0){
+    movespeed=movespeed*(-1);
+    digitalWrite(dirpin,LOW);
+  }
+  else{
+    digitalWrite(dirpin,HIGH);
+  }
+   
+    digitalWrite(steppin, HIGH);
+    delay(movespeed);  
+    digitalWrite(steppin, LOW); 
+    delay(movespeed);  
+
+
+    return 0;
+} 
