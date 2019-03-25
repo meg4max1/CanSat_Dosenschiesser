@@ -7,7 +7,7 @@
 #define dirver2   7
 #define enable    8
 
-#define MOVE_SPEED_FAST 1 
+#define MOVE_SPEED_FAST 5
 
 String bufString;
 int serialVals[4] = {0,0,0,0};
@@ -23,6 +23,7 @@ void setup() {
   pinMode(dirver2,OUTPUT);
   pinMode(enable,OUTPUT);
   digitalWrite(enable, LOW);
+
 
   digitalWrite(dirhor,HIGH);
   digitalWrite(dirver1,HIGH);
@@ -86,8 +87,7 @@ void speedctrl(int movespeed, int steppin, int dirpin){
     digitalWrite(dirpin,HIGH);
   }
    
-    digitalWrite(steppin, HIGH);
-    delay(movespeed);  
+    digitalWrite(steppin, HIGH); 
     digitalWrite(steppin, LOW); 
     delay(movespeed);  
 

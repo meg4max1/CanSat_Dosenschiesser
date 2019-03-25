@@ -7,3 +7,4 @@ https://github.com/sandeepmistry/arduino-LoRa.git
 https://github.com/adafruit/Adafruit_Sensor.git
 https://github.com/adafruit/Adafruit_BME280_Library.git
 https://github.com/adafruit/Adafruit_ADXL345.git
+https://github.com/adafruit/Adafruit_HMC5883_Unified
