@@ -18,16 +18,14 @@ void setup() {
 void loop() {
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
-    // received a packet
-    Serial.print("Received packet '");
 
     // read packet
     while (LoRa.available()) {
       Serial.print((char)LoRa.read());
     }
 
-    // print RSSI of packet
-    Serial.print("' with RSSI ");
+    Serial.print(",");
     Serial.println(LoRa.packetRssi());
+
   }
 }

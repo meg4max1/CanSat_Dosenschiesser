@@ -15,6 +15,7 @@
 #define BME_ADDR 0x76 
 
 Adafruit_BME280 bme;
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
@@ -66,8 +67,8 @@ String readSensors(){
   sensors_event_t event; 
   accel.getEvent(&event);
   int acceleration = (1000 * sqrt(sq(event.acceleration.x) + sq(event.acceleration.y) + sq(event.acceleration.z)));
-  String assembleString = "{";
-  assembleString = assembleString + temperature + "," + humidity + "," + pressure + "," + acceleration ;
+  String assembleString = String(temperature) ;
+  assembleString = assembleString + "," + humidity + "," + pressure + "," + acceleration ;
   return assembleString;
 }
 
