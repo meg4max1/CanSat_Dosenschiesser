@@ -1,68 +1,116 @@
 import processing.serial.*;
 
-Serial myPort;
+Serial recvSerial;
+
+String recvPort = "COM8";
 
 Table table;
 String filename;
 
 String inputString;
-String[] sensorLabels = {"Temperature:", "Humidity:", "Pressure:", "Acceleration:", "Rssi:"};
-String[] sensorUnits =  {"°C", "%RH", "mbar", "m/s²", " "};
-int[] sensorMultipliers = { 10, 10, 1000, 10, 1};
-String[] csvString = new String[5];
-float[] sensorData = new float[5];
-boolean portOpen = false;
+String[] sensorLabels = {"SatTemp:", "SatHumidity:", "SatPressure:", "SatAccel:", "SatGpsNr:", "SatLat:", "SatLon:", "SatGPSAlt:", "PacketRssi:", "BaseTemp:", "BaseHumidity:", "BasePressure:", "AltAngle:", "BaseGpsNr:", "BaseLat:", "BaseLon:", "BaseGPSAlt:"};
+String[] sensorUnits =  {"°C", "%RH", "mbar", "m/s²", " ", "deg", "deg", "m", " ", "°C", "%RH", "mbar", "°", " ", "deg", "deg", "m" };
+int[] sensorMultipliers = { 10, 10, 1000, 1000, 1, 100000, 100000, 10, 1, 10, 10, 1000, 10, 1, 100000, 100000, 10};
+String[] csvString = new String[sensorLabels.length];
+float[] sensorData = new float[sensorLabels.length];
+
+String[] calcLabels = {"deltaTemp:", "deltaHumidity:", "deltaPressure:"};
+String[] calcUnits =  {"°C", "%RH", "mbar"};
+float[] calcData = new float[calcLabels.length];
 
 int saveCounter = 0;
+int saveInterval = 60;
+
+int lastGUIupdate = 0;
+int refreshGUIinterval = 500;
+
+int columnDist= 402;
 
 void setup()
 {
-  size(1280, 720);
+  size(1280, 720, P3D);
   surface.setResizable(true);
 
-  myPort = new Serial(this, "COM8", 9600);
 
-  filename = "log_"+year()+"."+month()+"."+day()+"_"+hour()+":"+minute()+":"+second()+".csv;
+
+  filename = "log_"+year()+"_"+month()+"_"+day()+"_"+hour()+"_"+minute()+"_"+second()+".csv";
 
   table =new Table();
   table.addColumn("Time");
   for (int i=0; i<sensorLabels.length; i++) {
     table.addColumn(sensorLabels[i]);
   }
+  background(10);
+  recvSerial = new Serial(this, recvPort, 9600);
 }
 
 
 void draw()
 {
-  if ( myPort.available() > 0) {
-    inputString = myPort.readStringUntil('\n');
+  if ( recvSerial.available() > 0) {
+    inputString = recvSerial.readStringUntil('\n');
     if (inputString != null) {
       csvString = split(inputString, ",");
       for (int i=0; i<csvString.length; i++) {
         sensorData[i] = float(csvString[i]);
       }
-      myPort.clear();
+      recvSerial.clear();
+      calculate();
       table.addRow();
-      saveCounter++;
-      background(10);
-      fill(20);
-      rect(32, 32, 362, 68+sensorLabels.length*40, 8);
-      fill(200);
-      textSize(36);
-      text("Raw Data Inputs", 55, 78);
-      textSize(24);
-      fill(255);
+      table.setInt(table.getRowCount()-1, "Time", hour()*3600+minute()*60+second());
       for (int i=0; i<sensorData.length; i++) {
-        text(sensorLabels[i], 44, 124+40*i);
-        text(sensorUnits[i], 325, 124+40*i);
-        text((sensorData[i]/sensorMultipliers[i]), 200, 124+40*i);
-        table.setFloat(table.getRowCount(), sensorLabels[i], sensorData[i]);
+        table.setFloat(table.getRowCount()-1, sensorLabels[i], sensorData[i]/sensorMultipliers[i]);
       }
-      if (saveCounter>20) {
+      saveCounter++;
+      if (saveCounter>saveInterval) {
         saveTable(table, filename);
         text("saving", 600, 600);
         saveCounter = 0;
       }
-    } 
     }
   }
+  
+  
+  if (millis() - lastGUIupdate > refreshGUIinterval) {
+    drawGUI();
+  }
+  
+  
+  delay(1);
+}
+
+
+
+void calculate() {
+  calcData[0]=sensorData[0]/sensorMultipliers[0]-sensorData[8]/sensorMultipliers[8];
+  calcData[1]=sensorData[1]/sensorMultipliers[1]-sensorData[9]/sensorMultipliers[9];
+  calcData[2]=sensorData[2]/sensorMultipliers[2]-sensorData[10]/sensorMultipliers[10];
+}
+
+void drawGUI() {
+
+  fill(20);
+  rect(32, 32, 362, 68+sensorLabels.length*40, 8);
+  fill(200);
+  textSize(36);
+  text("Raw Data Inputs", 55, 78);
+  textSize(24);
+  fill(255);
+  for (int i=0; i<sensorData.length; i++) {
+    text(sensorLabels[i], 44, 124+40*i);
+    text(sensorUnits[i], 325, 124+40*i);
+    text((sensorData[i]/sensorMultipliers[i]), 210, 124+40*i);
+  }
+  fill(20);
+  rect(32+columnDist, 32, 362, 68+sensorLabels.length*40, 8);
+  fill(200);
+  textSize(36);
+  text("Calculated", 55+columnDist, 78);
+  textSize(24);
+  fill(255);
+  for (int i=0; i<calcLabels.length; i++) {
+    text(calcLabels[i], 44+columnDist, 124+40*i);
+    text(calcUnits[i], 325+columnDist, 124+40*i);
+    text(calcData[i], 210+columnDist, 124+40*i);
+  }
+}  
