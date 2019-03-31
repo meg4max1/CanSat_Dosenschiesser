@@ -1,4 +1,5 @@
-
+#include <TinyGPS++.h>
+#include <HardwareSerial.h>
 
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -14,6 +15,9 @@
 
 #define BME_ADDR 0x76 
 
+HardwareSerial gpsSerial(1);
+TinyGPSPlus gps;
+
 Adafruit_BME280 bme;
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
@@ -26,6 +30,7 @@ String sensorVals;
 void setup() {
  pinMode(LED_BUILTIN,OUTPUT);
  digitalWrite(LED_BUILTIN,LOW);
+ gpsSerial.begin(115200, SERIAL_8N1, 16, 17);
  LoRa.setPins(SX1278_CS, SX1278_RST, SX1278_IRQ);
  while (!LoRa.begin(868E6)) {
   blinkled(100);
@@ -58,6 +63,7 @@ void loop() {
     LoRa.endPacket();
     previousMillis = currentMillis;
   }
+  while (gpsSerial.available()) gps.encode(gpsSerial.read());
 }
 
 String readSensors(){
@@ -67,8 +73,20 @@ String readSensors(){
   sensors_event_t event; 
   accel.getEvent(&event);
   int acceleration = (1000 * sqrt(sq(event.acceleration.x) + sq(event.acceleration.y) + sq(event.acceleration.z)));
-  String assembleString = String(temperature) ;
-  assembleString = assembleString + "," + humidity + "," + pressure + "," + acceleration ;
+  int sat = gps.satellites.isValid() ? gps.satellites.value() : 0;
+  int latitude = gps.location.isValid() ? gps.location.lat()*10000 : 0;
+  int longtitude = gps.location.isValid() ? gps.location.lng()*10000 : 0;
+  
+  String assembleString = " ";
+  assembleString = 
+  assembleString + 
+  temperature + "," + 
+  humidity + "," + 
+  pressure + "," + 
+  acceleration + "," +
+  sat + "," +
+  latitude + "," +
+  longtitude;
   return assembleString;
 }
 
