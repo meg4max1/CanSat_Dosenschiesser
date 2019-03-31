@@ -49,9 +49,9 @@ String readSensors(){
   int pressure = bme.readPressure()*10;
   sensors_event_t event; 
   accel.getEvent(&event);
-  int azimuth = atan(event.acceleration.y/event.acceleration.z)*1000;
+  int elevation = atan(event.acceleration.y/event.acceleration.z)*1000;
   String assembleString = "," ;
-  assembleString = assembleString + temperature + "," + humidity + "," + pressure + "," + azimuth ;
+  assembleString = assembleString + temperature + "," + humidity + "," + pressure + "," + elevation ;
   return assembleString;
 }
 
