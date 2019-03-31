@@ -5,6 +5,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_ADXL345_U.h>
+#include <Adafruit_HMC5883_U.h>
 
 #include <SPI.h>
 #include <LoRa.h>
@@ -19,7 +20,8 @@ HardwareSerial gpsSerial(1);
 TinyGPSPlus gps; 
 
 Adafruit_BME280 bme;
-Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(11111);
+Adafruit_HMC5883_Unified compass = Adafruit_HMC5883_Unified(22222);
 
 String sendSerial = " ";
 
@@ -33,6 +35,7 @@ void setup() {
  }
  bme.begin(BME_ADDR);
  accel.begin();
+ compass.begin();
  Serial.begin(9600);
 }
 
@@ -52,12 +55,14 @@ void loop() {
 }
 
 String readSensors(){
+  sensors_event_t event;
   int temperature = bme.readTemperature()*10;
   int humidity = bme.readHumidity()*10;
   int pressure = bme.readPressure()*10;
-  sensors_event_t event; 
   accel.getEvent(&event);
+  compass.getEvent(&event);
   int elevationangle = atan(event.acceleration.y/event.acceleration.z)*1000;
+  int azimuthangle = atan2(event.magnetic.y, event.magnetic.x);
   int sat = gps.satellites.isValid() ? gps.satellites.value() : 0; 
   int latitude = gps.location.isValid() ? gps.location.lat()*100000 : 0; 
   int longtitude = gps.location.isValid() ? gps.location.lng()*100000 : 0;
@@ -68,6 +73,7 @@ String readSensors(){
   humidity + "," + 
   pressure + "," + 
   elevationangle + "," +
+  azimuthangle + "," +
   sat + "," + 
   latitude + "," + 
   longtitude + "," +

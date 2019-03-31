@@ -8,9 +8,26 @@ Table table;
 String filename;
 
 String inputString;
-String[] sensorLabels = {"SatTemp:", "SatHumidity:", "SatPressure:", "SatAccel:", "SatGpsNr:", "SatLat:", "SatLon:", "SatGPSAlt:", "PacketRssi:", "BaseTemp:", "BaseHumidity:", "BasePressure:", "AltAngle:", "BaseGpsNr:", "BaseLat:", "BaseLon:", "BaseGPSAlt:"};
-String[] sensorUnits =  {"°C", "%RH", "mbar", "m/s²", " ", "deg", "deg", "m", " ", "°C", "%RH", "mbar", "°", " ", "deg", "deg", "m" };
-int[] sensorMultipliers = { 10, 10, 1000, 1000, 1, 100000, 100000, 10, 1, 10, 10, 1000, 10, 1, 100000, 100000, 10};
+int[] displayOrder = {0, 9, 1, 10,
+                      2, 11, 3, 4, 
+                      5, 6, 7, 14, 
+                      15, 16, 17, 12, 
+                      13, 8};
+String[] sensorLabels = {"SatTemp:", "SatHumidity:", "SatPressure:", "SatAccel:", 
+                         "SatGpsNr:", "SatLat:", "SatLon:", "SatGPSAlt:", 
+                         "PacketRssi:", "BaseTemp:", "BaseHumidity:", "BasePressure:", 
+                         "TrackAltAngle:", "TrackAziAngle", "BaseGpsNr:", "BaseLat:", 
+                         "BaseLon:", "BaseGPSAlt:"};
+String[] sensorUnits =  {"°C", "%RH", "mbar", "m/s²", 
+                         " ", "deg", "deg", "m", 
+                         " ", "°C", "%RH", "mbar", 
+                         "°",  "°", " ", "deg", 
+                         "deg", "m" };
+int[] sensorMultipliers = { 10, 10, 1000, 1000, 
+                            1, 100000, 100000, 10, 
+                            1, 10, 10, 1000, 
+                            1, 10, 1, 100000, 
+                            100000, 10};
 String[] csvString = new String[sensorLabels.length];
 float[] sensorData = new float[sensorLabels.length];
 
@@ -82,9 +99,9 @@ void draw()
 
 
 void calculate() {
-  calcData[0]=sensorData[0]/sensorMultipliers[0]-sensorData[8]/sensorMultipliers[8];
-  calcData[1]=sensorData[1]/sensorMultipliers[1]-sensorData[9]/sensorMultipliers[9];
-  calcData[2]=sensorData[2]/sensorMultipliers[2]-sensorData[10]/sensorMultipliers[10];
+  calcData[0]=sensorData[0]/sensorMultipliers[0]-sensorData[9]/sensorMultipliers[9];
+  calcData[1]=sensorData[1]/sensorMultipliers[1]-sensorData[10]/sensorMultipliers[10];
+  calcData[2]=sensorData[2]/sensorMultipliers[2]-sensorData[11]/sensorMultipliers[11];
 }
 
 void drawGUI() {
@@ -97,9 +114,9 @@ void drawGUI() {
   textSize(24);
   fill(255);
   for (int i=0; i<sensorData.length; i++) {
-    text(sensorLabels[i], 44, 124+40*i);
-    text(sensorUnits[i], 325, 124+40*i);
-    text((sensorData[i]/sensorMultipliers[i]), 210, 124+40*i);
+    text(sensorLabels[displayOrder[i]], 44, 124+40*i);
+    text(sensorUnits[displayOrder[i]], 325, 124+40*i);
+    text((sensorData[displayOrder[i]]/sensorMultipliers[displayOrder[i]]), 210, 124+40*i);
   }
   fill(20);
   rect(32+columnDist, 32, 362, 68+sensorLabels.length*40, 8);
