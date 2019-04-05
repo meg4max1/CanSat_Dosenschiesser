@@ -61,7 +61,7 @@ String readSensors(){
   int pressure = bme.readPressure()*10;
   accel.getEvent(&event);
   //compass.getEvent(&event);
-  int elevationangle = atan(event.acceleration.y/event.acceleration.z)*1000;
+  int elevationangle = atan2(event.acceleration.y, event.acceleration.z)*1000;
   //int azimuthangle = atan2(event.magnetic.y, event.magnetic.x);
   int sat = gps.satellites.isValid() ? gps.satellites.value() : 0; 
   int latitude = gps.location.isValid() ? gps.location.lat()*100000 : 0; 

@@ -1,8 +1,13 @@
 import processing.serial.*;
 
 Serial recvSerial;
+Serial sendSerial;
+
 
 String recvPort = "COM8";
+String sendPort = "COM10";
+
+int baseAltitude = 326; //Suben: 326m
 
 Table table;
 String filename;
@@ -26,13 +31,15 @@ String[] sensorUnits =  {"°C", "%RH", "mbar", "m/s²",
 int[] sensorMultipliers = { 10, 10, 1000, 1000, 
                             1, 100000, 100000, 10, 
                             1, 10, 10, 1000, 
-                            1, 10, 1, 100000, 
+                            20, 10, 1, 100000, 
                             100000, 10};
+                            
 String[] csvString = new String[sensorLabels.length];
 float[] sensorData = new float[sensorLabels.length];
 
-String[] calcLabels = {"deltaTemp:", "deltaHumidity:", "deltaPressure:"};
-String[] calcUnits =  {"°C", "%RH", "mbar"};
+String[] calcLabels = {"Accel:", "deltaTemp:", "deltaHumidity:", "deltaPressure:", "stdPressure:", "satAltitude:", "deltaAlt:", "dewPoint:", "distlon:", "distlat:", "distges:", "calcaltangle:", "altsteps:"};
+String[] calcUnits =  {"g", "°C", "%RH", "mbar", "mbar", "m", "m", "°C",  "m", "m", "m", "°", " "};
+int[] calcMultipliers = {1, 1, 1, 1,1000,1000,1,1,1,1,1,1,1};
 float[] calcData = new float[calcLabels.length];
 
 int saveCounter = 0;
@@ -59,6 +66,7 @@ void setup()
   }
   background(10);
   recvSerial = new Serial(this, recvPort, 9600);
+  //sendSerial = new Serial(this, sendPort, 9600);
 }
 
 
@@ -99,9 +107,22 @@ void draw()
 
 
 void calculate() {
-  calcData[0]=sensorData[0]/sensorMultipliers[0]-sensorData[9]/sensorMultipliers[9];
-  calcData[1]=sensorData[1]/sensorMultipliers[1]-sensorData[10]/sensorMultipliers[10];
-  calcData[2]=sensorData[2]/sensorMultipliers[2]-sensorData[11]/sensorMultipliers[11];
+  calcData[0] = (sensorData[3]/sensorMultipliers[3])/9.81;
+  calcData[1] = (sensorData[0]/sensorMultipliers[0]-sensorData[9]/sensorMultipliers[9])/calcMultipliers[0];
+  calcData[2] = (sensorData[1]/sensorMultipliers[1]-sensorData[10]/sensorMultipliers[10])/calcMultipliers[1];
+  calcData[3] = (sensorData[2]/sensorMultipliers[2]-sensorData[11]/sensorMultipliers[11])/calcMultipliers[2];
+  calcData[4] = (sensorData[11]/(pow(1-((baseAltitude*0.0065)/(288.15)),5.255)))/calcMultipliers[4];
+  calcData[5] = (288.15/0.0065)*(1-pow(((sensorData[2]/sensorMultipliers[2])/calcData[4]),(1/5.255)));
+  calcData[6] = calcData[5]-baseAltitude;
+  calcData[7] = (241.2*log((sensorData[1]/sensorMultipliers[1])/100)+(4222.03716*sensorData[0]/sensorMultipliers[0]/(241.2+sensorData[0]/sensorMultipliers[0])))/
+                (17.5043-log((sensorData[1]/sensorMultipliers[1])/100)-(17.5043*sensorData[0]/sensorMultipliers[0]/(241.2+sensorData[0]/sensorMultipliers[0])));
+  calcData[8] = ((sensorData[16]/sensorMultipliers[16])-(sensorData[6]/sensorMultipliers[6]))*111300;
+  calcData[9] = ((sensorData[15]/sensorMultipliers[15])-(sensorData[5]/sensorMultipliers[5]))*111300*cos(sensorData[15]/sensorMultipliers[15]);
+  calcData[10] = sqrt(sq(calcData[8])+sq(calcData[9]));
+  calcData[11] = atan2(calcData[6],calcData[10]);
+  calcData[12] = (((sensorData[12]/sensorMultipliers[12])-calcData[11])*50)/3;
+  
+
 }
 
 void drawGUI() {
