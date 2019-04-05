@@ -37,9 +37,18 @@ int[] sensorMultipliers = { 10, 10, 1000, 1000,
 String[] csvString = new String[sensorLabels.length];
 float[] sensorData = new float[sensorLabels.length];
 
-String[] calcLabels = {"Accel:", "deltaTemp:", "deltaHumidity:", "deltaPressure:", "stdPressure:", "satAltitude:", "deltaAlt:", "dewPoint:", "distlon:", "distlat:", "distges:", "calcaltangle:", "altsteps:"};
-String[] calcUnits =  {"g", "°C", "%RH", "mbar", "mbar", "m", "m", "°C",  "m", "m", "m", "°", " "};
-int[] calcMultipliers = {1, 1, 1, 1,1000,1000,1,1,1,1,1,1,1};
+String[] calcLabels = {"Accel:", "deltaTemp:", "deltaHumidity:", "deltaPressure:", 
+                       "stdPressure:", "satAltitude:", "deltaAlt:", "dewPoint:", 
+                       "distlon:", "distlat:", "distges:", "calcaltangle:", 
+                       "altsteps:", "calcaziangle:", "azisteps:"};
+String[] calcUnits =  {"g", "°C", "%RH", "mbar", 
+                       "mbar", "m", "m", "°C",  
+                       "m", "m", "m", "°", 
+                       " ", "°", " "};
+int[] calcMultipliers = {1, 1, 1, 1,
+                         1000,1000,1,1,
+                         1,1,1,1,
+                         1,1,1};
 float[] calcData = new float[calcLabels.length];
 
 int saveCounter = 0;
@@ -121,7 +130,14 @@ void calculate() {
   calcData[10] = sqrt(sq(calcData[8])+sq(calcData[9]));
   calcData[11] = atan2(calcData[6],calcData[10]);
   calcData[12] = (((sensorData[12]/sensorMultipliers[12])-calcData[11])*50)/3;
-  
+  calcData[13] = atan2(calcData[8],calcData[9]);
+  if(calcData[9] < 0 ){
+    calcData[13] += 180;
+  }
+  else if(calcData[9] <= 0 && calcData[8] < 0){
+    calcData[13] += 360;
+  }
+  calcData[12] = (((sensorData[13]/sensorMultipliers[13])-calcData[13])*50)/3;
 
 }
 
