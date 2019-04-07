@@ -30,7 +30,9 @@ void setup() {
  digitalWrite(LED_BUILTIN,LOW);
  gpsSerial.begin(9600, SERIAL_8N1, 16, 17); 
  LoRa.setPins(SX1278_CS, SX1278_RST, SX1278_IRQ);
- if (!LoRa.begin(868E6)) {
+ LoRa.setSyncWord(0x42);
+ LoRa.enableCrc();
+ if (!LoRa.begin(867E6)) {
   digitalWrite(LED_BUILTIN,HIGH);
  }
  bme.begin(BME_ADDR);
@@ -42,7 +44,6 @@ void setup() {
 void loop() {
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
-    if(LoRa.readStringUntil(':')=="DoSchie:"){
     while (LoRa.available()) {
       Serial.print((char)LoRa.read());
     }
@@ -50,7 +51,6 @@ void loop() {
     Serial.print(",");
     Serial.print(LoRa.packetRssi());
     Serial.println(readSensors());
-    }
   }
   while (gpsSerial.available()) gps.encode(gpsSerial.read()); 
  /*currentMillis = millis();
@@ -68,7 +68,7 @@ String readSensors(){
   int pressure = bme.readPressure()*10;
   accel.getEvent(&event);
   //compass.getEvent(&event);
-  int elevationangle = atan2(event.acceleration.y, event.acceleration.z)/(17.45329);
+  int elevationangle = atan2(event.acceleration.y, event.acceleration.z)/(0.001745329);
   //int azimuthangle = atan2(event.magnetic.y, event.magnetic.x);
   int sat = gps.satellites.isValid() ? gps.satellites.value() : 0; 
   int latitude = gps.location.isValid() ? gps.location.lat()*100000 : 0; 
