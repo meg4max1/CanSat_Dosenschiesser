@@ -59,6 +59,7 @@ void loop() {
   if (millis() - previousMillis >= interval) {
     sensorVals = readSensors();
     LoRa.beginPacket();
+    LoRa.print("DoSchie:");
     LoRa.print(sensorVals);
     LoRa.endPacket();
     previousMillis = currentMillis;

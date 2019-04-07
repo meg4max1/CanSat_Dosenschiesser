@@ -42,6 +42,7 @@ void setup() {
 void loop() {
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
+    if(LoRa.readStringUntil(':')=="DoSchie:"){
     while (LoRa.available()) {
       Serial.print((char)LoRa.read());
     }
@@ -49,9 +50,15 @@ void loop() {
     Serial.print(",");
     Serial.print(LoRa.packetRssi());
     Serial.println(readSensors());
+    }
   }
   while (gpsSerial.available()) gps.encode(gpsSerial.read()); 
- 
+ /*currentMillis = millis();
+  if (millis() - previousMillis >= interval) {
+
+    
+    previousMillis = currentMillis;
+  }*/
 }
 
 String readSensors(){
@@ -61,7 +68,7 @@ String readSensors(){
   int pressure = bme.readPressure()*10;
   accel.getEvent(&event);
   //compass.getEvent(&event);
-  int elevationangle = atan2(event.acceleration.y, event.acceleration.z)*1000;
+  int elevationangle = atan2(event.acceleration.y, event.acceleration.z)/(17.45329);
   //int azimuthangle = atan2(event.magnetic.y, event.magnetic.x);
   int sat = gps.satellites.isValid() ? gps.satellites.value() : 0; 
   int latitude = gps.location.isValid() ? gps.location.lat()*100000 : 0; 
@@ -73,7 +80,7 @@ String readSensors(){
   humidity + "," + 
   pressure + "," + 
   elevationangle + "," +
-  //azimuthangle + "," +
+  /*azimuthangle*/ "0" + "," +
   sat + "," + 
   latitude + "," + 
   longtitude + "," +
