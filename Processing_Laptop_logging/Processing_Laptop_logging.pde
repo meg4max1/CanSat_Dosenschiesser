@@ -1,13 +1,18 @@
 import processing.serial.*;
 
-Serial recvSerial;
-Serial sendSerial;
+
 
 
 String recvPort = "COM8";
 String sendPort = "COM10";
 
 int baseAltitude = 326; //Suben: 326m
+int microstepping = 4;
+int stepsPerSerial = 200;
+
+
+Serial recvSerial;
+Serial sendSerial;
 
 Table table;
 String filename;
@@ -112,7 +117,8 @@ void draw()
     drawGUI();
   }
 
-
+  controlSteppers();
+  
   delay(1);
 }
 
@@ -137,16 +143,15 @@ void calculate() {
     calcData[9] = ((sensorData[15]/sensorMultipliers[15])-(sensorData[5]/sensorMultipliers[5]))*111300*cos(sensorData[15]/sensorMultipliers[15]);
     calcData[10] = sqrt(sq(calcData[8])+sq(calcData[9]));
     calcData[11] = atan2(calcData[6], calcData[10]);
-    calcData[12] = (((sensorData[12]/sensorMultipliers[12])-calcData[11])*50)/3;
+    calcData[12] = ((((sensorData[12]/sensorMultipliers[12])-calcData[11])*50)/3)/microstepping;
     calcData[13] = atan2(calcData[8], calcData[9]);
     if (calcData[9] < 0 ) {
       calcData[13] += 180;
     } else if (calcData[9] <= 0 && calcData[8] < 0) {
       calcData[13] += 360;
     }
-    calcData[14] = (((sensorData[13]/sensorMultipliers[13])-calcData[13])*50)/3;
-  } 
-  else {
+    calcData[14] = ((((sensorData[13]/sensorMultipliers[13])-calcData[13])*50)/3)/microstepping;
+  } else {
     calcData[8] = 0;
     calcData[9] = 0;
     calcData[10] = 0;
@@ -154,42 +159,49 @@ void calculate() {
     calcData[12] = 0;
     calcData[13] = 0;
     calcData[14] = 0;
-    
   }
+}
 
-  void drawGUI() {
+void drawGUI() {
 
-    fill(20);
-    rect(32, 32, 362, 68+sensorLabels.length*40, 8);
-    fill(200);
-    textSize(36);
-    text("Raw Data Inputs", 55, 78);
-    textSize(24);
-    fill(255);
-    for (int i=0; i<sensorData.length; i++) {
-      text(sensorLabels[displayOrder[i]], 44, 124+40*i);
-      text(sensorUnits[displayOrder[i]], 325, 124+40*i);
-      text((sensorData[displayOrder[i]]/sensorMultipliers[displayOrder[i]]), 210, 124+40*i);
-    }
-    fill(20);
-    rect(32+columnDist, 32, 362, 68+sensorLabels.length*40, 8);
-    fill(200);
-    textSize(36);
-    text("Calculated", 55+columnDist, 78);
-    textSize(24);
-    fill(255);
-    for (int i=0; i<calcLabels.length; i++) {
-      text(calcLabels[i], 44+columnDist, 124+40*i);
-      text(calcUnits[i], 325+columnDist, 124+40*i);
-      text(calcData[i], 210+columnDist, 124+40*i);
-    }
-  }  
-  /*void controlSteppers(){
-   if(calcData[14]=0 and calcData[12]=0){
-     
-   }
-   else if(calcData[14]=
-   
-   
-   
-   }*/
+  fill(20);
+  rect(32, 32, 362, 68+sensorLabels.length*40, 8);
+  fill(200);
+  textSize(36);
+  text("Raw Data Inputs", 55, 78);
+  textSize(24);
+  fill(255);
+  for (int i=0; i<sensorData.length; i++) {
+    text(sensorLabels[displayOrder[i]], 44, 124+40*i);
+    text(sensorUnits[displayOrder[i]], 325, 124+40*i);
+    text((sensorData[displayOrder[i]]/sensorMultipliers[displayOrder[i]]), 210, 124+40*i);
+  }
+  fill(20);
+  rect(32+columnDist, 32, 362, 68+sensorLabels.length*40, 8);
+  fill(200);
+  textSize(36);
+  text("Calculated", 55+columnDist, 78);
+  textSize(24);
+  fill(255);
+  for (int i=0; i<calcLabels.length; i++) {
+    text(calcLabels[i], 44+columnDist, 124+40*i);
+    text(calcUnits[i], 325+columnDist, 124+40*i);
+    text(calcData[i], 210+columnDist, 124+40*i);
+  }
+}  
+void controlSteppers() {
+  if (calcData[14]==0 || calcData[12]==0 || sensorData[4]==0 || sensorData[14]==0) {
+    return;
+  }
+  int vertSteps = 0;
+  int horSteps = 0;
+  if(calcData[12] > 200) vertSteps = 200;
+  else if (calcData[12] < -200) vertSteps = -200;
+  else vertSteps = int(calcData[12]);
+  if(calcData[14] > 200) vertSteps = 200;
+  else if (calcData[14] < -200) vertSteps = -200;
+  else vertSteps = int(calcData[14]);
+  
+  sendSerial.write(calcData[14] + "," + calcData[12] + ",");
+  println(horSteps + "," + vertSteps + "," + "\n");
+}

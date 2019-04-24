@@ -18,8 +18,8 @@ void setup() {
 }
 
 void loop() {
-  speedctrl(-1,stephor,dirhor);
-  speedctrl(-1,stepver,dirver);
+  speedctrl(readjoystick(4),stephor,dirhor);
+  speedctrl(readjoystick(5),stepver,dirver);
 }
 
 void speedctrl(int movespeed, int steppin, int dirpin){
@@ -35,27 +35,8 @@ void speedctrl(int movespeed, int steppin, int dirpin){
     delay(movespeed);  
 }
 
-
-void teststepper(int pin, int speedms,int steps){
-    for(int i=1; i<=steps; i++){
-    digitalWrite(pin, HIGH);
-    delay(speedms/2);
-    digitalWrite(pin, LOW);
-    delay(speedms/2);
-  }
-}
-void test2stepper(int pin1, int pin2, int speedms,int steps){
-    for(int i=1; i<=steps; i++){
-    digitalWrite(pin1, HIGH);
-    digitalWrite(pin2, HIGH);
-    delay(speedms);
-    digitalWrite(pin1, LOW);
-    digitalWrite(pin2, HIGH);
-    delay(speedms);
-  }
-}
 int readjoystick(int pin){
- if(analogRead(pin) > 562)return map(analogRead(pin), 562, 1023, 50, 5);
- else if(analogRead(pin) < 462)return map(analogRead(pin), 0, 462, -5, -50);
+ if(analogRead(pin) > 562)return map(analogRead(pin), 562, 1023, 20, 2);
+ else if(analogRead(pin) < 462)return map(analogRead(pin), 0, 462, -2, -20);
  else return 0;
 }

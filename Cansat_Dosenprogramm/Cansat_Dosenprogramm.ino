@@ -23,7 +23,7 @@ Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
-const long interval = 250;
+const long interval = 333;
 
 String sensorVals;
 
@@ -34,8 +34,7 @@ void setup() {
   
   LoRa.setPins(SX1278_CS, SX1278_RST, SX1278_IRQ);
   LoRa.setSyncWord(0x42);
-  LoRa.enableCrc();
-  while (!LoRa.begin(867E6)) {
+  while (!LoRa.begin(863E6)) {
     blinkled(100);
   }
 

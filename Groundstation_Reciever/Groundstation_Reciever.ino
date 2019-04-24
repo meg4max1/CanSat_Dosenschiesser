@@ -5,7 +5,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_ADXL345_U.h>
-#include <Adafruit_HMC5883_U.h>
+#include <QMC5883.h>
 
 #include <SPI.h>
 #include <LoRa.h>
@@ -21,7 +21,7 @@ TinyGPSPlus gps;
 
 Adafruit_BME280 bme;
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(11111);
-//Adafruit_HMC5883_Unified compass = Adafruit_HMC5883_Unified(22222);
+QMC5883 qq;
 
 String sendSerial = " ";
 
@@ -31,13 +31,12 @@ void setup() {
  gpsSerial.begin(9600, SERIAL_8N1, 16, 17); 
  LoRa.setPins(SX1278_CS, SX1278_RST, SX1278_IRQ);
  LoRa.setSyncWord(0x42);
- LoRa.enableCrc();
- if (!LoRa.begin(867E6)) {
+ if (!LoRa.begin(863E6)) {
   digitalWrite(LED_BUILTIN,HIGH);
  }
  bme.begin(BME_ADDR);
  accel.begin();
- //compass.begin();
+ qq.begin();
  Serial.begin(9600);
 }
 
@@ -67,9 +66,9 @@ String readSensors(){
   int humidity = bme.readHumidity()*10;
   int pressure = bme.readPressure()*10;
   accel.getEvent(&event);
-  //compass.getEvent(&event);
+  qq.calculate();
   int elevationangle = atan2(event.acceleration.y, event.acceleration.z)/(0.001745329);
-  //int azimuthangle = atan2(event.magnetic.y, event.magnetic.x);
+  int azimuthangle = qq.getHeadingDegree('z');
   int sat = gps.satellites.isValid() ? gps.satellites.value() : 0; 
   int latitude = gps.location.isValid() ? gps.location.lat()*100000 : 0; 
   int longtitude = gps.location.isValid() ? gps.location.lng()*100000 : 0;
@@ -80,7 +79,7 @@ String readSensors(){
   humidity + "," + 
   pressure + "," + 
   elevationangle + "," +
-  /*azimuthangle*/ "0" + "," +
+  azimuthangle + "," +
   sat + "," + 
   latitude + "," + 
   longtitude + "," +
