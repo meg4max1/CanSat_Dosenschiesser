@@ -4,7 +4,7 @@ import processing.serial.*;
 
 
 String recvPort = "COM8";
-String sendPort = "COM10";
+String sendPort = "COM6";
 
 int baseAltitude = 326; //Suben: 326m
 int microstepping = 4;
@@ -36,7 +36,7 @@ String[] sensorUnits =  {"°C", "%RH", "mbar", "m/s²",
 int[] sensorMultipliers = { 10, 10, 1000, 1000, 
   1, 100000, 100000, 10, 
   1, 10, 10, 1000, 
-  10, 10, 1, 100000, 
+  10, 1, 1, 100000, 
   100000, 10};
 
 String[] csvString = new String[sensorLabels.length];
@@ -195,13 +195,14 @@ void controlSteppers() {
   }
   int vertSteps = 0;
   int horSteps = 0;
-  if(calcData[12] > 200) vertSteps = 200;
-  else if (calcData[12] < -200) vertSteps = -200;
+  if(calcData[12] > 333) vertSteps = 333;
+  else if (calcData[12] < -333) vertSteps = -333;
   else vertSteps = int(calcData[12]);
-  if(calcData[14] > 200) vertSteps = 200;
-  else if (calcData[14] < -200) vertSteps = -200;
+  calcData[14]=calcData[14]*(-1);
+  if(calcData[14] > 333) vertSteps = 333;
+  else if (calcData[14] < -333) vertSteps = -333;
   else vertSteps = int(calcData[14]);
   
-  sendSerial.write(calcData[14] + "," + calcData[12] + ",");
+  //sendSerial.write(calcData[14] + "," + calcData[12] + ",");
   println(horSteps + "," + vertSteps + "," + "\n");
 }

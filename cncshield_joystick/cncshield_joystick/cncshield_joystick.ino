@@ -18,8 +18,8 @@ void setup() {
 }
 
 void loop() {
-  speedctrl(readjoystick(4),stephor,dirhor);
-  speedctrl(readjoystick(5),stepver,dirver);
+  speedctrl(readjoystick(5),stephor,dirhor);
+  speedctrl(readjoystick(4),stepver,dirver);
 }
 
 void speedctrl(int movespeed, int steppin, int dirpin){
@@ -36,7 +36,7 @@ void speedctrl(int movespeed, int steppin, int dirpin){
 }
 
 int readjoystick(int pin){
- if(analogRead(pin) > 562)return map(analogRead(pin), 562, 1023, 20, 2);
- else if(analogRead(pin) < 462)return map(analogRead(pin), 0, 462, -2, -20);
+ if(analogRead(pin) > 562)return map(analogRead(pin), 562, 1023, 20, 1);
+ else if(analogRead(pin) < 462)return map(analogRead(pin), 0, 462, -1, -20);
  else return 0;
 }
